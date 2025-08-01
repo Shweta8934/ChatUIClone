@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chatbot</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #e5ddd5;
+    }
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    .messages {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+    .user {
+      background-color: #dcf8c6;
+      align-self: flex-end;
+    }
+    .bot {
+      background-color: #f1f0f0;
+      align-self: flex-start;
+    }
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ccc;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      background: #34b7f1;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chat-container">
+    <div class="messages" id="chatBox"></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Type a message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+<script>
+  const chatBox = document.getElementById('chatBox');
+  const webhookUrl = 'https://shweta212.app.n8n.cloud/webhook/a980351a-8f2f-4e56-9e1a-632793e4d365';
+
+  function appendMessage(content, sender) {
+    const msg = document.createElement('div');
+    msg.className = `message ${sender}`;
+    msg.textContent = content;
+    chatBox.appendChild(msg);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    if (!message) return;
+
+    appendMessage(message, 'user');
+    input.value = '';
+
+    try {
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await res.json();
+
+      // Extract output from array response
+      const reply = data[0]?.output || 'Bot has no reply.';
+      appendMessage(reply, 'bot');
+    } catch (err) {
+      console.error('Fetch error:', err);
+      appendMessage('Error contacting bot.', 'bot');
+    }
+  }
+</script>
+
+</body>
+</html>
